@@ -1,13 +1,18 @@
 import cors from "cors"
 import express from "express"
+import { readFile } from 'fs/promises';
+import thoughtsData from './data.json' with { type: "json" };
+//import fs from 'fs';
+import { get } from "http";
 
-// Defines the port the app will run on. Defaults to 8080, but can be overridden
-// when starting the server. Example command to overwrite PORT env variable value:
-// PORT=9000 npm start
-const port = process.env.PORT || 8080
+const port = process.env.PORT || 8080;
 const app = express()
 
-// Add middlewares to enable cors and json body parsing
+async function getThoughts() {
+  const data = await readFile("./data.json");
+  return JSON.parse(data);
+}
+
 app.use(cors())
 app.use(express.json())
 
@@ -15,6 +20,19 @@ app.use(express.json())
 app.get("/", (req, res) => {
   res.send("Hello Technigo!")
 })
+
+app.get("/api/thoughts", async(req, res) => {
+  const thoughts = await getThoughts();
+  res.json(thoughts);
+})
+
+app.get("/api/thoughts/:id", async(req, res) => {
+  const thoughts = await getThoughts();
+  const id = req.params.id;  
+  const thought = thoughts.find(thought => thought._id === id);
+  res.json(thought);
+})
+
 
 // Start the server
 app.listen(port, () => {
