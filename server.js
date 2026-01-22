@@ -14,17 +14,15 @@ app.get("/", (req, res) => {
   res.send(expressListEndpoints(app)); // List all available endpoints
 });
 
-
 app.get("/api/thoughts", (req, res) => {
   if (req.query.minHearts) {
     const minHearts = parseInt(req.query.minHearts);
-    const filteredThoughts = data.filter(thought => thought.hearts >= minHearts);
+    const filteredThoughts = data.filter(
+      (thought) => thought.hearts >= minHearts,
+    );
     return res.json(filteredThoughts);
-  } else {
-    res.send("Unknown query parameter");
   }
   res.json(data);
-
 });
 
 app.get("/api/thoughts/:id", (req, res) => {
@@ -32,7 +30,6 @@ app.get("/api/thoughts/:id", (req, res) => {
   const thought = data.find((thought) => thought._id === id);
   res.json(thought);
 });
-
 
 // Start the server
 app.listen(port, () => {
