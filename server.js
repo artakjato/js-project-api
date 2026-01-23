@@ -9,10 +9,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Start defining your routes here
-app.get("/", (req, res) => {
-  res.send(expressListEndpoints(app)); // List all available endpoints
-});
+app.get("/", (req, res) => {   //listing all available endpoints
+  const endpoints = expressListEndpoints(app);
+  res.json({
+    message: "Welcome to the Thoughts API!",
+    endpoints: endpoints, 
+    });
+  });
 
 app.get("/api/thoughts", (req, res) => {
   if (req.query.minHearts) {
