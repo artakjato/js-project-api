@@ -31,6 +31,20 @@ app.get("/api/thoughts/:id", (req, res) => {
   res.json(thought);
 });
 
+app.post("/api/thoughts", (req, res) => {
+  const body = req.body;
+  const newThought = {
+    _id: String(data.length + 1),
+    message: body.message,
+    hearts: 0,
+    createdAt: new Date().toISOString(),
+    "__v": 0
+  };
+  data.push(newThought);
+  res.status(201).json(newThought);
+})
+;
+
 // Start the server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
