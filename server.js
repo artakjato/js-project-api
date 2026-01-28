@@ -2,6 +2,26 @@ import cors from "cors";
 import express from "express";
 import expressListEndpoints from "express-list-endpoints";
 import data from "./data.json";
+import mongoose from 'mongoose';
+
+const mongoDB = "mongodb://localhost:27017/happythoughts";
+main().catch((err) => console.log(err));
+async function main() {
+  console.log("Connecting to MongoDB...");
+  await mongoose.connect(mongoDB);
+}
+
+const Schema = mongoose.Schema;
+
+const HappyThoughtsSchema = new Schema({
+  // _id: String,
+  message: String,
+  hearts: Number,
+  createdAt: String,
+  __v: Number
+});
+
+const HappyThoughts = mongoose.model("HappyThoughts", HappyThoughtsSchema);
 
 const port = process.env.PORT || 8080;
 const app = express();
@@ -17,15 +37,18 @@ app.get("/", (req, res) => {   //listing all available endpoints
     });
   });
 
-app.get("/api/thoughts", (req, res) => {
+app.get("/api/thoughts", async (req, res) => {
   if (req.query.minHearts) {
     const minHearts = parseInt(req.query.minHearts);
-    const filteredThoughts = data.filter(
-      (thought) => thought.hearts >= minHearts,
-    );
+    const filteredThoughts = await HappyThoughts.find({ hearts: { $gte: minHearts } }); //greater than or equal to
     return res.json(filteredThoughts);
   }
-  res.json(data);
+   try {
+    const thoughts = await HappyThoughts.find();
+    res.json(thoughts);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.get("/api/thoughts/:id", (req, res) => {
