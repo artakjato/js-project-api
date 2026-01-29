@@ -70,16 +70,17 @@ app.get("/api/thoughts/:id", async (req, res) => {
   }
 });
 
-app.post("/api/thoughts", (req, res) => {
+app.post("/api/thoughts", async (req, res) => {
   const body = req.body;
   const newThought = {
-    _id: String(data.length + 1),
+    _id: new mongoose.Types.ObjectId().toString(),
     message: body.message,
     hearts: 0,
     createdAt: new Date().toISOString(),
     __v: 0,
   };
-  data.push(newThought);
+  await HappyThoughts.create(newThought);
+  // data.push(newThought);
   res.status(201).json(newThought);
 });
 
