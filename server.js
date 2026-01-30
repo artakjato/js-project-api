@@ -1,12 +1,14 @@
 import cors from "cors";
 import express from "express";
 import expressListEndpoints from "express-list-endpoints";
-import data from "./data.json";
 import mongoose from "mongoose";
+import "dotenv/config";
 
 //const mongoDB = "mongodb://localhost:27017/happythoughts";
-const password = process.env.PASSWORD; 
-const mongoDB = process.env.MONGO_URL || `mongodb+srv://artakjato:${password}@clusterhappythoughts.fhtetam.mongodb.net/?appName=ClusterHappyThoughts`;
+const password = process.env.PASSWORD;
+const mongoDB =
+  process.env.MONGO_URL ||
+  `mongodb+srv://artakjato:${password}@clusterhappythoughts.fhtetam.mongodb.net/?appName=ClusterHappyThoughts`;
 main().catch((err) => console.log(err));
 async function main() {
   console.log("Connecting to MongoDB...");
@@ -106,7 +108,7 @@ app.put("/api/thoughts/:id", async (req, res) => {
     const thought = await HappyThoughts.findByIdAndUpdate(
       id,
       { $set: { message: message } },
-      { new: true }
+      { new: true },
     );
     if (!thought) {
       return res.status(404).json({ error: "Thought not found" });
@@ -128,6 +130,25 @@ app.delete("/api/thoughts/:id", async (req, res) => {
       return res.status(404).json({ error: "Thought not found" });
     }
     return res.json({ message: "Thought deleted successfully" });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/api/thoughts/:id/like", async (req, res) => {
+  const id = req.params.id;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ error: "Invalid id" });
+  }
+  try {
+    const thought = await HappyThoughts.findByIdAndUpdate(
+      id,
+      { $inc: { hearts: 1 } }
+    );
+    if (!thought) {
+      return res.status(404).json({ error: "Thought not found" });
+    }
+    return res.json(thought);
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
