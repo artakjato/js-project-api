@@ -4,7 +4,9 @@ import expressListEndpoints from "express-list-endpoints";
 import data from "./data.json";
 import mongoose from "mongoose";
 
-const mongoDB = "mongodb://localhost:27017/happythoughts";
+//const mongoDB = "mongodb://localhost:27017/happythoughts";
+const password = process.env.PASSWORD; 
+const mongoDB = process.env.MONGO_URL || `mongodb+srv://artakjato:${password}@clusterhappythoughts.fhtetam.mongodb.net/?appName=ClusterHappyThoughts`;
 main().catch((err) => console.log(err));
 async function main() {
   console.log("Connecting to MongoDB...");
