@@ -1,17 +1,17 @@
 import mongoose from "mongoose";
 
 const HappyThoughtsSchema = new mongoose.Schema({
-  message:{
+  message: {
     type: String,
     required: true,
     minlength: 5,
     maxlength: 140,
   },
-  hearts:{
+  hearts: {
     type: Number,
     default: 0,
   },
-  createdAt:{
+  createdAt: {
     type: Date,
     default: Date.now,
   },
@@ -22,4 +22,7 @@ const HappyThoughtsSchema = new mongoose.Schema({
   },
 });
 
-export const HappyThoughts = mongoose.model("HappyThoughts", HappyThoughtsSchema);
+export const HappyThoughts = mongoose.model(
+  "HappyThoughts",
+  HappyThoughtsSchema,
+);

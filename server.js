@@ -7,7 +7,6 @@ import "dotenv/config";
 import happyThoughtRoutes from "./routes/happyThoughtRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 
-//const mongoDB = "mongodb://localhost:27017/happythoughts";
 const password = process.env.PASSWORD;
 const mongoDB =
   process.env.MONGO_URL ||
@@ -23,7 +22,6 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-
 
 app.get("/", (req, res) => {
   //listing all available endpoints

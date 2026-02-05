@@ -1,11 +1,94 @@
-# Project API
+Happy Thoughts API 💬❤️
 
-This project includes the packages and babel setup for an express server, and is just meant to make things a little simpler to get up and running with.
+This is a RESTful API built with Node.js, Express, and MongoDB for a “Happy Thoughts” application.
+Users can sign up, log in, post happy thoughts, like them, and manage their own posts.
 
-## Getting started
+The API is deployed on Render and connected to MongoDB Atlas.
 
-Install dependencies with `npm install`, then start the server by running `npm run dev`
+🚀 Features
 
-## View it live
+  User authentication (signup & login)
 
-Every project should be deployed somewhere. Be sure to include the link to the deployed project so that the viewer can click around and see what it's all about.
+  Secure password hashing
+
+  Create, read, update, and delete thoughts
+
+  Like thoughts
+
+  Ownership protection (users can only edit/delete their own posts)
+
+  API documentation endpoint
+
+  Deployed online
+
+🛠️ Tech Stack
+
+  Node.js
+
+  Express.js
+
+  MongoDB + Mongoose
+
+  bcryptjs (password hashing)
+
+  dotenv (environment variables)
+
+  express-list-endpoints
+
+CORS
+
+🧠 Data Models
+User Model
+
+  email (unique)
+
+  password (hashed)
+
+  accessToken
+
+HappyThought Model
+
+  message (5–140 chars)
+
+  hearts (number)
+
+  createdAt
+
+  userId (reference to User)
+
+🔒 Security
+
+  Passwords are hashed using bcrypt
+
+  Access tokens are stored securely
+
+  Protected routes require authentication
+
+  Users can only edit/delete their own posts
+
+❗ Error Handling
+
+  The API returns meaningful status codes:
+
+  400 Bad Request
+
+  401 Unauthorized
+
+  403 Forbidden
+
+  404 Not Found
+
+  500 Server Error
+
+This project was built to practice:
+
+REST APIs
+
+Authentication
+
+MongoDB
+
+Full-stack integration
+
+Deployment
+

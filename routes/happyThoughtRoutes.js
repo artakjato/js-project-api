@@ -9,15 +9,15 @@ router.get("/", async (req, res) => {
   try {
     const query = {};
 
-  if (req.query.minHearts) {
-    const minHearts = Number(req.query.minHearts);
-    if (Number.isNaN(minHearts)) {
-      return res.status(400).json({ error: "minHearts must be a number" });
-    } 
-    query.hearts = { $gte: minHearts };
-  }
+    if (req.query.minHearts) {
+      const minHearts = Number(req.query.minHearts);
+      if (Number.isNaN(minHearts)) {
+        return res.status(400).json({ error: "minHearts must be a number" });
+      }
+      query.hearts = { $gte: minHearts };
+    }
 
-    const thoughts = await HappyThoughts.find(query).sort({ createdAt: -1 });//greater than or equal to
+    const thoughts = await HappyThoughts.find(query).sort({ createdAt: -1 }); //greater than or equal to
     return res.json(thoughts);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -46,10 +46,11 @@ router.post("/", authenticateUser, async (req, res) => {
     return res.status(400).json({
       error: "Message is required and must be between 5 and 140 characters", // will validate the message length or if it's empty
     });
-  } try {
-  const newThought = await HappyThoughts.create({
-   message,
-   userId: req.user.id,
+  }
+  try {
+    const newThought = await HappyThoughts.create({
+      message,
+      userId: req.user.id,
     });
     return res.status(201).json(newThought);
   } catch (err) {
@@ -57,7 +58,7 @@ router.post("/", authenticateUser, async (req, res) => {
   }
 });
 
-router.put("/:id", authenticateUser,async (req, res) => {
+router.put("/:id", authenticateUser, async (req, res) => {
   const { id } = req.params;
   const { message } = req.body;
 
@@ -72,12 +73,14 @@ router.put("/:id", authenticateUser,async (req, res) => {
   }
 
   try {
-    const thought = await HappyThoughts.findById(id)
+    const thought = await HappyThoughts.findById(id);
     if (!thought) {
       return res.status(404).json({ error: "Thought not found" });
     }
     if (thought.userId.toString() !== req.user.id) {
-      return res.status(403).json({ error: "Unauthorized to update this thought" });
+      return res
+        .status(403)
+        .json({ error: "Unauthorized to update this thought" });
     }
 
     thought.message = message;
@@ -102,7 +105,9 @@ router.delete("/:id", authenticateUser, async (req, res) => {
       return res.status(404).json({ error: "Thought not found" });
     }
     if (thought.userId.toString() !== req.user.id) {
-      return res.status(403).json({ error: "Unauthorized to delete this thought" });
+      return res
+        .status(403)
+        .json({ error: "Unauthorized to delete this thought" });
     }
     await HappyThoughts.findByIdAndDelete(id);
     return res.json({ message: "Thought deleted successfully" });
@@ -122,7 +127,7 @@ router.post("/:id/like", async (req, res) => {
     const thought = await HappyThoughts.findByIdAndUpdate(
       id,
       { $inc: { hearts: 1 } },
-      { new: true }
+      { new: true },
     );
 
     if (!thought) {
