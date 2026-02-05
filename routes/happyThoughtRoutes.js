@@ -1,7 +1,7 @@
 import express from "express";
 import mongoose from "mongoose";
 import { HappyThoughts } from "../models/happyThought.js";
-import { authenticateUser } from "../middleware/authenticateUser.js";
+import { authenticateUser } from "../middleware/authMiddle.js";
 
 const router = express.Router();
 
