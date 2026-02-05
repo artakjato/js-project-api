@@ -8,17 +8,34 @@ router.post('/signup', async (req, res) => {
   try {
     const { email, password } = req.body;
 
-  const existingUser = await User.findOne({ email: email.toLowerCase() });
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email and password are required',
+      });
+    }
+
+    if (password.length < 8) {
+      return res.status(400).json({
+        success: false,
+        error: 'Password must be at least 8 characters long',
+      });
+    }
+
+  const normalizedEmail = email.toLowerCase().trim();
+
+  const existingUser = await User.findOne({ email: normalizedEmail });
   if (existingUser) {
-    return res.status(400).json({ 
+    return res.status(409).json({ 
       success: false,
       error: 'Email already in use' 
     });
   }
 
-  const salt = bcrypt.genSalt();
+  const salt = await bcrypt.genSalt();
   const hashedPassword = await bcrypt.hash(password, salt);
-  const user = new User({ email, password: hashedPassword });
+
+  const user = new User({ email: normalizedEmail, password: hashedPassword });
   await user.save();
 
   return res.status(201).json({
@@ -31,10 +48,10 @@ router.post('/signup', async (req, res) => {
     },
   });
 } catch (error) {
-  res.status(400).json({
+  return res.status(400).json({
     success: false,
-    message: 'Could not create user',
-    response: error,
+    message: 'Sorry, I could not create a user',
+    response: error.message,
   });
 }
 });
@@ -43,10 +60,21 @@ router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email and password are required',
+      });
+    }
 
-    if (user && bcrypt.compareSync(password, user.password)) {
-      res.json({
+    const normalizedEmail = email.toLowerCase().trim();
+
+    const user = await User.findOne({ email: normalizedEmail });
+
+    const passwordMatch = user ? await bcrypt.compare(password, user.password) : false;
+
+    if (user && passwordMatch) {
+      return res.json({
         success: true,
         message: 'Login successful',
         response: {
@@ -55,11 +83,13 @@ router.post('/login', async (req, res) => {
           accessToken: user.accessToken,
         },
       });
-    } else {
-      res.status(401).json({
+    } 
+    
+    else {
+      return res.status(401).json({
         success: false,
         message: 'Invalid email or password',
-        response: null,
+        info: 'https://http.dog/401',
       });
     }
   } catch (error) {
