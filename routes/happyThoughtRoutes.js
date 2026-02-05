@@ -1,27 +1,31 @@
 import express from "express";
-import { happyThought } from "../models/happyThought.js";
+import mongoose from "mongoose";
+import { HappyThoughts } from "../models/happyThought.js";
 import { authenticateUser } from "../middleware/authenticateUser.js";
 
 const router = express.Router();
 
-app.get("/api/thoughts", async (req, res) => {
-  if (req.query.minHearts) {
-    const minHearts = parseInt(req.query.minHearts);
-    const filteredThoughts = await HappyThoughts.find({
-      hearts: { $gte: minHearts },
-    }); //greater than or equal to
-    return res.json(filteredThoughts);
-  }
+router.get("/", async (req, res) => {
   try {
-    const thoughts = await HappyThoughts.find();
-    res.json(thoughts);
+    const query = {};
+
+  if (req.query.minHearts) {
+    const minHearts = Number(req.query.minHearts);
+    if (Number.isNaN(minHearts)) {
+      return res.status(400).json({ error: "minHearts must be a number" });
+    } 
+    query.hearts = { $gte: minHearts };
+  }
+
+    const thoughts = await HappyThoughts.find(query).sort({ createdAt: -1 });//greater than or equal to
+    return res.json(thoughts);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-app.get("/api/thoughts/:id", async (req, res) => {
-  const id = req.params.id;
+router.get("/:id", async (req, res) => {
+  const { id } = req.params;
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(400).json({ error: "Invalid id" }); // will check if the id is valid
   }
@@ -36,80 +40,95 @@ app.get("/api/thoughts/:id", async (req, res) => {
   }
 });
 
-app.post("/api/thoughts", async (req, res) => {
-  const body = req.body;
-  if (!body.message || body.message.length < 5 || body.message.length > 140) {
+router.post("/", authenticateUser, async (req, res) => {
+  const { message } = req.body;
+  if (!message || message.length < 5 || message.length > 140) {
     return res.status(400).json({
       error: "Message is required and must be between 5 and 140 characters", // will validate the message length or if it's empty
     });
+  } try {
+  const newThought = await HappyThoughts.create({
+   message,
+   userId: req.user.id,
+    });
+    return res.status(201).json(newThought);
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
   }
-  const newThought = {
-    _id: new mongoose.Types.ObjectId().toString(),
-    message: body.message,
-    hearts: 0,
-    createdAt: new Date().toISOString(),
-    __v: 0,
-  };
-  await HappyThoughts.create(newThought);
-  // data.push(newThought);
-  res.status(201).json(newThought);
 });
 
-app.put("/api/thoughts/:id", async (req, res) => {
-  const id = req.params.id;
+router.put("/:id", authenticateUser,async (req, res) => {
+  const { id } = req.params;
   const { message } = req.body;
+
   if (!message || message.length < 5 || message.length > 140) {
     return res.status(400).json({
       error: "Message is required and must be between 5 and 140 characters",
     });
   }
+
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(400).json({ error: "Invalid id" });
   }
+
   try {
-    const thought = await HappyThoughts.findByIdAndUpdate(
-      id,
-      { $set: { message: message } },
-      { new: true },
-    );
+    const thought = await HappyThoughts.findById(id)
     if (!thought) {
       return res.status(404).json({ error: "Thought not found" });
     }
+    if (thought.userId.toString() !== req.user.id) {
+      return res.status(403).json({ error: "Unauthorized to update this thought" });
+    }
+
+    thought.message = message;
+    await thought.save();
+
     return res.json(thought);
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
 });
 
-app.delete("/api/thoughts/:id", async (req, res) => {
-  const id = req.params.id;
+router.delete("/:id", authenticateUser, async (req, res) => {
+  const { id } = req.params;
+
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(400).json({ error: "Invalid id" });
   }
+
   try {
-    const thought = await HappyThoughts.findByIdAndDelete(id);
+    const thought = await HappyThoughts.findById(id);
     if (!thought) {
       return res.status(404).json({ error: "Thought not found" });
     }
+    if (thought.userId.toString() !== req.user.id) {
+      return res.status(403).json({ error: "Unauthorized to delete this thought" });
+    }
+    await HappyThoughts.findByIdAndDelete(id);
     return res.json({ message: "Thought deleted successfully" });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
 });
 
-app.post("/api/thoughts/:id/like", async (req, res) => {
-  const id = req.params.id;
+router.post("/:id/like", async (req, res) => {
+  const { id } = req.params;
+
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(400).json({ error: "Invalid id" });
   }
+
   try {
     const thought = await HappyThoughts.findByIdAndUpdate(
       id,
-      { $inc: { hearts: 1 } }
+      { $inc: { hearts: 1 } },
+      { new: true }
     );
+
     if (!thought) {
       return res.status(404).json({ error: "Thought not found" });
     }
+
     return res.json(thought);
   } catch (err) {
     return res.status(500).json({ error: err.message });
